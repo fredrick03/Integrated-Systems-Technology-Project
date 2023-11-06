@@ -1,0 +1,16 @@
+[
+	{
+		"restaurant_id" : 1,
+		"restaurant_name" : "Delicious Bistro",
+		"location" : "Institut Teknologi Bandung",
+		"detail_location" : "Kantin SBM",
+		"rating" : 4.50
+	},
+	{
+		"restaurant_id" : 2,
+		"restaurant_name" : "Tasty Thai Kitchen",
+		"location" : "Institut Teknologi Bandung",
+		"detail_location" : "Kantin LabTek 5",
+		"rating" : 4.20
+	}
+]

@@ -1,0 +1,38 @@
+[
+	{
+		"menu_id" : 1,
+		"restaurant_id" : 1,
+		"dish_name" : "Spaghetti Carbonara",
+		"price" : 25000.00
+	},
+	{
+		"menu_id" : 2,
+		"restaurant_id" : 1,
+		"dish_name" : "Grilled Chicken Salad",
+		"price" : 20000.00
+	},
+	{
+		"menu_id" : 3,
+		"restaurant_id" : 1,
+		"dish_name" : "Margherita Pizza",
+		"price" : 25000.00
+	},
+	{
+		"menu_id" : 4,
+		"restaurant_id" : 2,
+		"dish_name" : "Pad Thai Noodles",
+		"price" : 20000.00
+	},
+	{
+		"menu_id" : 5,
+		"restaurant_id" : 2,
+		"dish_name" : "Green Curry Chicken",
+		"price" : 23000.00
+	},
+	{
+		"menu_id" : 6,
+		"restaurant_id" : 2,
+		"dish_name" : "Tom Yum Soup",
+		"price" : 20000.00
+	}
+]

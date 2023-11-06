@@ -1,0 +1,18 @@
+[
+	{
+		"user_id" : 1,
+		"username" : "user1",
+		"password" : "password1",
+		"name" : "John Doe",
+		"university" : "Institut Teknologi Bandung",
+		"phone_number" : "123-456-7890"
+	},
+	{
+		"user_id" : 2,
+		"username" : "user2",
+		"password" : "password2",
+		"name" : "Jane Smith",
+		"university" : "Institut Teknologi Bandung",
+		"phone_number" : "987-654-3210"
+	}
+]
