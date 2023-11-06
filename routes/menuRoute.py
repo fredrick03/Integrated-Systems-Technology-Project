@@ -50,7 +50,6 @@ async def update_menu(menu_id: int, item: MenuItems, db: Session = Depends(get_d
     db.refresh(menu_item)
     return menu_item
 
-# Delete menu item by ID
 @menu_items_router.delete('/menu/{menu_id}')
 async def delete_menu(menu_id: int, db: Session = Depends(get_db)):
     menu_item = db.query(models.MenuItem).filter(models.MenuItem.menu_id == menu_id).first()
@@ -60,7 +59,19 @@ async def delete_menu(menu_id: int, db: Session = Depends(get_db)):
             detail=f"Menu with ID {menu_id} not found."
         )
 
+    # Delete the menu item
     db.delete(menu_item)
     db.commit()
 
+    # Retrieve all remaining menu items
+    remaining_menu_items = db.query(models.MenuItem).all()
+
+    # Reorder the menu IDs
+    for index, item in enumerate(remaining_menu_items, start=1):
+        item.menu_id = index
+
+    # Commit the changes to the database
+    db.commit()
+
     return "Menu deleted successfully."
+

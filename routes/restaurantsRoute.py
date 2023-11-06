@@ -35,14 +35,14 @@ async def retrieve_resto_by_name(restaurant_name: str, db: Session = Depends(get
         )
     return restaurants
 
-# Get restaurants by location
-@restaurants_router.get("/restaurants/loc/{location}", response_model=List[Restaurants])
-async def retrieve_resto_by_location(location: str, db: Session = Depends(get_db)):
-    restaurants = db.query(models.Restaurants).filter(models.Restaurants.detail_location == location).all()
+# Get restaurants by university
+@restaurants_router.get("/restaurants/uni/{university}", response_model=List[Restaurants])
+async def retrieve_resto_by_location(university: str, db: Session = Depends(get_db)):
+    restaurants = db.query(models.Restaurants).filter(models.Restaurants.university == university).all()
     if not restaurants:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No restaurants found in location '{location}'"
+            detail=f"No restaurants found in '{university}'"
         )
     return restaurants
 
@@ -89,6 +89,16 @@ async def delete_resto(restaurant_id: int, db: Session = Depends(get_db)):
         )
 
     db.delete(restaurant)
+    db.commit()
+
+    # Retrieve all remaining menu items
+    remaining_restaurants = db.query(models.Restaurants).all()
+
+    # Reorder the menu IDs
+    for index, item in enumerate(remaining_restaurants, start=1):
+        item.restaurant_id = index
+
+    # Commit the changes to the database
     db.commit()
 
     return "Restaurant deleted successfully."

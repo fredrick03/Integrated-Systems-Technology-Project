@@ -8,7 +8,7 @@ import database.models as models
 import uvicorn
 
 app = FastAPI()
-models.Base.metadata.create_all(bind=engine)
+# models.Base.metadata.create_all(bind=engine)
 
 # Default route for the root URL
 @app.get("/")
@@ -20,5 +20,5 @@ app.include_router(menu_items_router)
 app.include_router(restaurants_router)
 app.include_router(users_router)
 
-if __name__	=="__main__":	
-    uvicorn.run("main:app",	host="localhost",port=8000, reload=True)	
+# if __name__	=="__main__":	
+#     uvicorn.run("main:app",	host="localhost",port=8000, reload=True)	

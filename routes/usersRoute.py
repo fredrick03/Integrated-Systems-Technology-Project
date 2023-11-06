@@ -63,4 +63,14 @@ async def delete_user(user_id: int, db: Session = Depends(get_db)):
     db.delete(user)
     db.commit()
 
+    # Retrieve all remaining menu items
+    remaining_users = db.query(models.Users).all()
+
+    # Reorder the menu IDs
+    for index, item in enumerate(remaining_users, start=1):
+        item.user_id = index
+
+    # Commit the changes to the database
+    db.commit()
+
     return "User deleted successfully."
