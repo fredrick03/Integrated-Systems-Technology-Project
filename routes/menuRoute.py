@@ -1,20 +1,20 @@
 from fastapi import HTTPException, status, APIRouter, Depends
 from sqlalchemy.orm import Session
 from typing import List
-from schemas import MenuItems
+from schemas import MenuItems, MenuItemsOut
 from database.database import get_db
 import database.models as models
 
 menu_items_router = APIRouter()
 
 # Get all menu items
-@menu_items_router.get("/menu", response_model=List[MenuItems])
+@menu_items_router.get("/menu", response_model=List[MenuItemsOut])
 async def retrieve_all_menu(db: Session = Depends(get_db)):
     menu_items = db.query(models.MenuItem).all()
     return menu_items
 
 # Get menu item by ID
-@menu_items_router.get("/menu/{menu_id}", response_model=MenuItems)
+@menu_items_router.get("/menu/{menu_id}", response_model=MenuItemsOut)
 async def retrieve_menu(menu_id: int, db: Session = Depends(get_db)):
     menu_item = db.query(models.MenuItem).filter(models.MenuItem.menu_id == menu_id).first()
     if not menu_item:
@@ -25,12 +25,21 @@ async def retrieve_menu(menu_id: int, db: Session = Depends(get_db)):
     return menu_item
 
 # Add new menu item
-@menu_items_router.post('/menu')
+@menu_items_router.post('/menu', response_model=MenuItemsOut)
 async def add_menu(item: MenuItems, db: Session = Depends(get_db)):
     menu_item = models.MenuItem(**item.dict())
     db.add(menu_item)
     db.commit()
-    db.refresh(menu_item)
+
+    # Retrieve all remaining menu items
+    remaining_menu_items = db.query(models.MenuItem).all()
+
+    # Reorder the menu IDs
+    for index, item in enumerate(remaining_menu_items, start=1):
+        item.menu_id = index
+
+    # Commit the changes to the database
+    db.commit()
     return menu_item
 
 # Update menu item by ID

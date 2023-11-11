@@ -1,20 +1,20 @@
 from fastapi import HTTPException, status, APIRouter, Depends
 from sqlalchemy.orm import Session
 from typing import List
-from schemas import Restaurants
+from schemas import Restaurants, RestaurantsOut
 from database.database import get_db
 import database.models as models
 
 restaurants_router = APIRouter()
 
 # Get all restaurants
-@restaurants_router.get("/restaurants", response_model=List[Restaurants])
+@restaurants_router.get("/restaurants", response_model=List[RestaurantsOut])
 async def retrieve_all_resto(db: Session = Depends(get_db)):
     restaurants = db.query(models.Restaurants).all()
     return restaurants
 
 # Get restaurant by ID
-@restaurants_router.get("/restaurants/{restaurant_id}", response_model=Restaurants)
+@restaurants_router.get("/restaurants/{restaurant_id}", response_model=RestaurantsOut)
 async def retrieve_resto_by_id(restaurant_id: int, db: Session = Depends(get_db)):
     restaurant = db.query(models.Restaurants).filter(models.Restaurants.restaurant_id == restaurant_id).first()
     if restaurant is None:
@@ -25,7 +25,7 @@ async def retrieve_resto_by_id(restaurant_id: int, db: Session = Depends(get_db)
     return restaurant
 
 # Get restaurants by name
-@restaurants_router.get("/restaurants/name/{restaurant_name}", response_model=List[Restaurants])
+@restaurants_router.get("/restaurants/name/{restaurant_name}", response_model=List[RestaurantsOut])
 async def retrieve_resto_by_name(restaurant_name: str, db: Session = Depends(get_db)):
     restaurants = db.query(models.Restaurants).filter(models.Restaurants.restaurant_name == restaurant_name).all()
     if not restaurants:
@@ -36,7 +36,7 @@ async def retrieve_resto_by_name(restaurant_name: str, db: Session = Depends(get
     return restaurants
 
 # Get restaurants by university
-@restaurants_router.get("/restaurants/uni/{university}", response_model=List[Restaurants])
+@restaurants_router.get("/restaurants/uni/{university}", response_model=List[RestaurantsOut])
 async def retrieve_resto_by_location(university: str, db: Session = Depends(get_db)):
     restaurants = db.query(models.Restaurants).filter(models.Restaurants.university == university).all()
     if not restaurants:
@@ -47,7 +47,7 @@ async def retrieve_resto_by_location(university: str, db: Session = Depends(get_
     return restaurants
 
 # Add new restaurant
-@restaurants_router.post('/restaurants')
+@restaurants_router.post('/restaurants', response_model=RestaurantsOut)
 async def add_resto(item: Restaurants, db: Session = Depends(get_db)):
     restaurant = models.Restaurants(**item.dict())
     if restaurant.distance_m > 500:
@@ -58,7 +58,16 @@ async def add_resto(item: Restaurants, db: Session = Depends(get_db)):
     else:
         db.add(restaurant)
         db.commit()
-        db.refresh(restaurant)
+
+            # Retrieve all remaining menu items
+    remaining_restaurants = db.query(models.Restaurants).all()
+
+    # Reorder the menu IDs
+    for index, item in enumerate(remaining_restaurants, start=1):
+        item.restaurant_id = index
+
+    # Commit the changes to the database
+    db.commit()
     return restaurant
 
 # Update restaurant by ID

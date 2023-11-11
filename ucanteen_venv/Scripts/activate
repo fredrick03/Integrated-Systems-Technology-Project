@@ -37,7 +37,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="D:\Documents\Education\ITB\ACADEMICS\STI SMT 5\Teknologi Sistem Terintegrasi\ucanteen\ucanteen_venv"
+VIRTUAL_ENV="D:\Documents\Education\ITB\ACADEMICS\STI SMT 5\Teknologi Sistem Terintegrasi\TST-UCANTEEN\ucanteen_venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
