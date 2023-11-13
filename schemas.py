@@ -41,10 +41,11 @@ class UsersOut(BaseModel):
 class Users(BaseModel):
     username : str
     email :EmailStr
-    password : str
+    password :str
     name : str
     university_name : str
     phone_number : str
+    # is_admin : bool
 
 class Token(BaseModel):
     access_token: str

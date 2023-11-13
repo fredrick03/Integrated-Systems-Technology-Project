@@ -14,6 +14,12 @@ users_router = APIRouter(tags=['User Route'])
 # signup
 @authentication.post('/signup', response_model=schemas.UsersOut)
 async def add_user(item: Users, db: Session = Depends(get_db)):
+    if not item.password:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Password is required",
+        )
+    
     user = models.Users(**item.dict())
     # hash the password - user.password
     hashed_password = auth_utils.hash(user.password)
@@ -34,10 +40,10 @@ async def add_user(item: Users, db: Session = Depends(get_db)):
 
 # login
 @authentication.post('/login', response_model=schemas.LoginResponse)
-def login(credentials: schemas.LoginRequest, db: Session = Depends(get_db)):
+def login(credentials: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
 
     user = db.query(models.Users).filter(
-        models.Users.email == credentials.email).first()
+        models.Users.username == credentials.username).first()
 
     if not user or not auth_utils.verify(credentials.password, user.password):
         raise HTTPException(
@@ -56,8 +62,8 @@ def logout(db: Session = Depends(get_db), current_user: models.Users = Depends(o
     current_user = db.query(models.Users).filter(
         models.Users.email == current_user.email).first()
 
-    current_user.access_token = None
-    current_user.token_type = None
+    current_user.access_token = '-'
+    current_user.token_type = '-'
 
     # return {"access_token": access_token, "token_type": "bearer"}
     return current_user
@@ -87,12 +93,12 @@ async def retrieve_user_by_id(user_id: int, db: Session = Depends(get_db), curre
 
 # Get curent_user data - all users
 @users_router.get("/users/myaccount", response_model=schemas.Users)
-async def retrieve_user_by_id(db: Session = Depends(get_db), current_user: models.Users = Depends(oauth.get_current_user)):
+async def retrieve_current_user_data(db: Session = Depends(get_db), current_user: models.Users = Depends(oauth.get_current_user)):
     return current_user
 
 # Update current user data - all users
 @users_router.put('/users/myaccount')
-async def update_user(item: Users, current_user: models.Users = Depends(oauth.get_current_user), db: Session = Depends(get_db)):
+async def update_current_user_data(item: Users, current_user: models.Users = Depends(oauth.get_current_user), db: Session = Depends(get_db)):
     for key, value in item.dict().items():
         setattr(current_user, key, value)
     db.commit()

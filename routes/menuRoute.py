@@ -33,13 +33,13 @@ async def retrieve_menu_by_id(menu_id: int, db: Session = Depends(get_db), curre
         return menu_item
 
 # Get menu item in a nearby restaurant - all users
-@menu_items_router.get("/users/restaurant/nearby/{restaurant_name}/menu", response_model=MenuItemsOut)
+@menu_items_router.get("/users/restaurant/nearby/{restaurant_name}/menu", response_model=List[MenuItemsOut])
 async def retrieve_menu_nearby_resto(restaurant_name: str, db: Session = Depends(get_db), current_user: models.Users = Depends(oauth.get_current_user)):
-    nearby_resto = restaurantsRoute.retrieve_nearby_resto
+    nearby_resto = await restaurantsRoute.retrieve_nearby_resto(db, current_user)
     for resto in nearby_resto:
-        if resto == restaurant_name:
+        if resto.restaurant_name == restaurant_name:
             restaurant = db.query(models.Restaurants).filter(models.Restaurants.restaurant_name == restaurant_name).first()
-            menu_item = db.query(models.MenuItem).filter(models.MenuItem.restaurant_id == restaurant.restaurant_id).first()
+            menu_item = db.query(models.MenuItem).filter(models.MenuItem.restaurant_id == restaurant.restaurant_id).all()
             return menu_item
     
     raise HTTPException(

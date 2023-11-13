@@ -7,7 +7,7 @@ from database import models
 from middleware import oauth
 import haversine as hs
 from haversine import Unit
-from shapely.geometry import Point
+# from shapely.geometry import Point
 
 restaurants_router = APIRouter(tags=['Restaurant Route'])
 
@@ -37,7 +37,7 @@ async def retrieve_resto_by_id(restaurant_id: int, db: Session = Depends(get_db)
 
 
 # Get restaurants by university - admin only
-@restaurants_router.get("/restaurants/uni/{university}", response_model=List[RestaurantsOut])
+@restaurants_router.get("/admin/restaurants/uni/{university}", response_model=List[RestaurantsOut])
 async def retrieve_resto_by_university(university_name: str, db: Session = Depends(get_db), current_user: models.Users = Depends(oauth.get_current_user)):
     if current_user.is_admin == False:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Unauthorized")
@@ -75,8 +75,8 @@ async def add_resto(item: Restaurants, db: Session = Depends(get_db), current_us
     else:
         restaurant = models.Restaurants(**item.dict())
         university = db.query(models.University).filter(models.University.university_name == restaurant.university_name).first()
-        restaurant_loc = Point(restaurant.lat,restaurant.long)
-        university_loc = Point(university.lat,university.long)
+        restaurant_loc = (restaurant.lat,restaurant.long)
+        university_loc = (university.lat,university.long)
         distance_m = hs.haversine(university_loc,restaurant_loc, unit=Unit.METERS)
         if distance_m > 500:
             raise HTTPException(
@@ -114,8 +114,8 @@ async def update_resto(restaurant_id: int, item: Restaurants, db: Session = Depe
         else: 
             # get university and check restaurant distance from university
             university = db.query(models.University).filter(models.University.university_name == restaurant.university_name).first()
-            restaurant_loc = Point(restaurant.lat,restaurant.long)
-            university_loc = Point(university.lat,university.long)
+            restaurant_loc = (restaurant.lat,restaurant.long)
+            university_loc = (university.lat,university.long)
             distance = hs.haversine(university_loc,restaurant_loc, unit=Unit.METERS)
             # condition for distance
             if distance > 500:

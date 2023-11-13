@@ -9,7 +9,7 @@ import database.models as models
 import uvicorn
 
 app = FastAPI()
-models.Base.metadata.create_all(bind=engine)
+# models.Base.metadata.create_all(bind=engine)
 
 # Default route for the root URL
 @app.get("/")
