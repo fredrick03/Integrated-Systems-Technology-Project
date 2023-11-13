@@ -3,84 +3,115 @@ from sqlalchemy.orm import Session
 from typing import List
 from schemas import MenuItems, MenuItemsOut
 from database.database import get_db
-import database.models as models
+from database import models
+from middleware import oauth
+from . import restaurantsRoute
 
-menu_items_router = APIRouter()
+menu_items_router = APIRouter(tags=['Menu Route'])
 
-# Get all menu items
-@menu_items_router.get("/menu", response_model=List[MenuItemsOut])
-async def retrieve_all_menu(db: Session = Depends(get_db)):
-    menu_items = db.query(models.MenuItem).all()
-    return menu_items
+# Get all menu items - admin only
+@menu_items_router.get("/admin/menu/all", response_model=List[MenuItemsOut])
+async def retrieve_all_menu(db: Session = Depends(get_db), current_user: models.Users = Depends(oauth.get_current_user)):
+    if current_user.is_admin == False:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Unauthorized")
+    else:
+        menu_items = db.query(models.MenuItem).all()
+        return menu_items
 
-# Get menu item by ID
-@menu_items_router.get("/menu/{menu_id}", response_model=MenuItemsOut)
-async def retrieve_menu(menu_id: int, db: Session = Depends(get_db)):
-    menu_item = db.query(models.MenuItem).filter(models.MenuItem.menu_id == menu_id).first()
-    if not menu_item:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Menu with supplied ID does not exist"
-        )
-    return menu_item
+# Get menu item by ID - admin only
+@menu_items_router.get("/admin/menu/{menu_id}", response_model=MenuItemsOut)
+async def retrieve_menu_by_id(menu_id: int, db: Session = Depends(get_db), current_user: models.Users = Depends(oauth.get_current_user)):
+    if current_user.is_admin == False:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Unauthorized")
+    else:
+        menu_item = db.query(models.MenuItem).filter(models.MenuItem.menu_id == menu_id).first()
+        if not menu_item:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Menu with supplied ID does not exist"
+            )
+        return menu_item
 
-# Add new menu item
-@menu_items_router.post('/menu', response_model=MenuItemsOut)
-async def add_menu(item: MenuItems, db: Session = Depends(get_db)):
-    menu_item = models.MenuItem(**item.dict())
-    db.add(menu_item)
-    db.commit()
+# Get menu item in a nearby restaurant - all users
+@menu_items_router.get("/users/restaurant/nearby/{restaurant_name}/menu", response_model=MenuItemsOut)
+async def retrieve_menu_nearby_resto(restaurant_name: str, db: Session = Depends(get_db), current_user: models.Users = Depends(oauth.get_current_user)):
+    nearby_resto = restaurantsRoute.retrieve_nearby_resto
+    for resto in nearby_resto:
+        if resto == restaurant_name:
+            restaurant = db.query(models.Restaurants).filter(models.Restaurants.restaurant_name == restaurant_name).first()
+            menu_item = db.query(models.MenuItem).filter(models.MenuItem.restaurant_id == restaurant.restaurant_id).first()
+            return menu_item
+    
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"There is no {restaurant_name} nearby."
+    )
 
-    # Retrieve all remaining menu items
-    remaining_menu_items = db.query(models.MenuItem).all()
+# Add new menu item - admin only
+@menu_items_router.post('/admin/menu', response_model=MenuItemsOut)
+async def add_menu(item: MenuItems, db: Session = Depends(get_db), current_user: models.Users = Depends(oauth.get_current_user)):
+    if current_user.is_admin == False:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Unauthorized")
+    else:
+        menu_item = models.MenuItem(**item.dict())
+        db.add(menu_item)
+        db.commit()
 
-    # Reorder the menu IDs
-    for index, item in enumerate(remaining_menu_items, start=1):
-        item.menu_id = index
+        # Retrieve all remaining menu items
+        remaining_menu_items = db.query(models.MenuItem).all()
 
-    # Commit the changes to the database
-    db.commit()
-    return menu_item
+        # Reorder the menu IDs
+        for index, item in enumerate(remaining_menu_items, start=1):
+            item.menu_id = index
 
-# Update menu item by ID
-@menu_items_router.put('/menu/{menu_id}')
-async def update_menu(menu_id: int, item: MenuItems, db: Session = Depends(get_db)):
-    menu_item = db.query(models.MenuItem).filter(models.MenuItem.menu_id == menu_id).first()
-    if menu_item is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Menu with ID {menu_id} not found."
-        )
+        # Commit the changes to the database
+        db.commit()
+        return menu_item
 
-    for key, value in item.dict().items():
-        setattr(menu_item, key, value)
+# Update menu item by ID -admin only
+@menu_items_router.put('/admin/menu/{menu_id}')
+async def update_menu(menu_id: int, item: MenuItems, db: Session = Depends(get_db), current_user: models.Users = Depends(oauth.get_current_user)):
+    if current_user.is_admin == False:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Unauthorized")
+    else:
+        menu_item = db.query(models.MenuItem).filter(models.MenuItem.menu_id == menu_id).first()
+        if menu_item is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Menu with ID {menu_id} not found."
+            )
 
-    db.commit()
-    db.refresh(menu_item)
-    return menu_item
+        for key, value in item.dict().items():
+            setattr(menu_item, key, value)
 
-@menu_items_router.delete('/menu/{menu_id}')
-async def delete_menu(menu_id: int, db: Session = Depends(get_db)):
-    menu_item = db.query(models.MenuItem).filter(models.MenuItem.menu_id == menu_id).first()
-    if menu_item is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Menu with ID {menu_id} not found."
-        )
+        db.commit()
+        return "Menu updated successfully."
 
-    # Delete the menu item
-    db.delete(menu_item)
-    db.commit()
+# Delete menu item by ID -admin only
+@menu_items_router.delete('/admin/menu/{menu_id}')
+async def delete_menu(menu_id: int, db: Session = Depends(get_db), current_user: models.Users = Depends(oauth.get_current_user)):
+    if current_user.is_admin == False:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Unauthorized")
+    else:
+        menu_item = db.query(models.MenuItem).filter(models.MenuItem.menu_id == menu_id).first()
+        if menu_item is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Menu with ID {menu_id} not found."
+            )
 
-    # Retrieve all remaining menu items
-    remaining_menu_items = db.query(models.MenuItem).all()
+        # Delete the menu item
+        db.delete(menu_item)
+        db.commit()
 
-    # Reorder the menu IDs
-    for index, item in enumerate(remaining_menu_items, start=1):
-        item.menu_id = index
+        # Retrieve all remaining menu items
+        remaining_menu_items = db.query(models.MenuItem).all()
 
-    # Commit the changes to the database
-    db.commit()
+        # Reorder the menu IDs
+        for index, item in enumerate(remaining_menu_items, start=1):
+            item.menu_id = index
 
-    return "Menu deleted successfully."
+        # Commit the changes to the database
+        db.commit()
+        return "Menu deleted successfully."
 

@@ -15,25 +15,27 @@ class MenuItems(BaseModel):
 class RestaurantsOut(BaseModel):
     restaurant_id : int
     restaurant_name : str
-    university : str        #e.g Institut Teknnologi Bandung
+    university_name : str   #e.g Institut Teknologi Bandung
+    lat : float
+    long : float
     detail_location : str   #e.g Kantin LabTek 5
     distance_m : int        #distance from university center point
     rating : float
 
 class Restaurants(BaseModel):
     restaurant_name : str
-    university : str        #e.g Institut Teknnologi Bandung
+    university_name : str   #e.g Institut Teknologi Bandung
+    lat : float
+    long : float
     detail_location : str   #e.g Kantin LabTek 5
-    distance_m : int        #distance from university center point
     rating : float
 
 class UsersOut(BaseModel):
     user_id : int
     username : str
     email :EmailStr
-    password : str
     name : str
-    university : str
+    university_name : str
     phone_number : str
 
 class Users(BaseModel):
@@ -41,7 +43,7 @@ class Users(BaseModel):
     email :EmailStr
     password : str
     name : str
-    university : str
+    university_name : str
     phone_number : str
 
 class Token(BaseModel):
@@ -50,3 +52,23 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     id: Optional[str] = None 
+
+class LoginRequest(BaseModel):
+    email : EmailStr
+    password : str
+
+class LoginResponse(BaseModel):
+    username : str
+    email :EmailStr
+    password : str
+    name : str
+    university_name : str
+    phone_number : str
+    access_token : str
+    token_type : str
+
+class University(BaseModel):
+    university_name : str
+    lat : float
+    long : float
+    

@@ -1,66 +1,100 @@
 from fastapi import HTTPException, status, APIRouter, Depends
+from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from typing import List
 from schemas import Users
 from database.database import get_db
-import database.models as models
+from database import models
+from middleware import oauth, auth_utils
+import schemas
 
-users_router = APIRouter()
+authentication = APIRouter(tags=['Authentication'])
+users_router = APIRouter(tags=['User Route'])
 
-# Get all users
-@users_router.get("/users", response_model=List[Users])
-async def retrieve_all_users(db: Session = Depends(get_db)):
-    users = db.query(models.Users).all()
-    return users
-
-# Get user by ID
-@users_router.get("/users/{user_id}", response_model=Users)
-async def retrieve_user_by_id(user_id: int, db: Session = Depends(get_db)):
-    user = db.query(models.Users).filter(models.Users.user_id == user_id).first()
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User with supplied ID does not exist"
-        )
-    return user
-
-# Add new user
-@users_router.post('/users')
+# signup
+@authentication.post('/signup', response_model=schemas.UsersOut)
 async def add_user(item: Users, db: Session = Depends(get_db)):
     user = models.Users(**item.dict())
+    # hash the password - user.password
+    hashed_password = auth_utils.hash(user.password)
+    user.password = hashed_password
     db.add(user)
     db.commit()
-    db.refresh(user)
-    return user
+    
+    # Retrieve all remaining menu items
+    remaining_users = db.query(models.Users).all()
 
-# Update user by ID
-@users_router.put('/users/{user_id}')
-async def update_user(user_id: int, item: Users, db: Session = Depends(get_db)):
-    user = db.query(models.Users).filter(models.Users.user_id == user_id).first()
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User with ID {user_id} not found."
-        )
+    # Reorder the menu IDs
+    for index, item in enumerate(remaining_users, start=1):
+        item.user_id = index
 
-    for key, value in item.dict().items():
-        setattr(user, key, value)
-
+    # Commit the changes to the database
     db.commit()
-    db.refresh(user)
     return user
 
-# Delete user by ID
-@users_router.delete('/users/{user_id}')
-async def delete_user(user_id: int, db: Session = Depends(get_db)):
-    user = db.query(models.Users).filter(models.Users.user_id == user_id).first()
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User with ID {user_id} not found."
-        )
+# login
+@authentication.post('/login', response_model=schemas.LoginResponse)
+def login(credentials: schemas.LoginRequest, db: Session = Depends(get_db)):
 
-    db.delete(user)
+    user = db.query(models.Users).filter(
+        models.Users.email == credentials.email).first()
+
+    if not user or not auth_utils.verify(credentials.password, user.password):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Invalid Credentials")
+
+    access_token = oauth.create_access_token(data={"user_id": user.user_id})
+    user.access_token = access_token
+    user.token_type = "bearer"
+
+    # return {"access_token": access_token, "token_type": "bearer"}
+    return user
+
+# logout
+@authentication.post('/logout', response_model=schemas.LoginResponse)
+def logout(db: Session = Depends(get_db), current_user: models.Users = Depends(oauth.get_current_user)):
+    current_user = db.query(models.Users).filter(
+        models.Users.email == current_user.email).first()
+
+    current_user.access_token = None
+    current_user.token_type = None
+
+    # return {"access_token": access_token, "token_type": "bearer"}
+    return current_user
+
+# Get all users - admin only
+@users_router.get("/admin/users/all", response_model=List[schemas.UsersOut])
+async def retrieve_all_users(db: Session = Depends(get_db), current_user: models.Users = Depends(oauth.get_current_user)):
+    if current_user.is_admin == False:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Unauthorized")
+    else:
+        users = db.query(models.Users).all()
+        return users
+
+# Get user by ID - admin only
+@users_router.get("/admin/users/{user_id}", response_model=schemas.UsersOut)
+async def retrieve_user_by_id(user_id: int, db: Session = Depends(get_db), current_user: models.Users = Depends(oauth.get_current_user)):
+    if current_user.is_admin == False:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Unauthorized")
+    else:
+        user = db.query(models.Users).filter(models.Users.user_id == user_id).first()
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User with supplied ID does not exist"
+            )
+        return user
+
+# Get curent_user data - all users
+@users_router.get("/users/myaccount", response_model=schemas.Users)
+async def retrieve_user_by_id(db: Session = Depends(get_db), current_user: models.Users = Depends(oauth.get_current_user)):
+    return current_user
+
+# Update current user data - all users
+@users_router.put('/users/myaccount')
+async def update_user(item: Users, current_user: models.Users = Depends(oauth.get_current_user), db: Session = Depends(get_db)):
+    for key, value in item.dict().items():
+        setattr(current_user, key, value)
     db.commit()
 
     # Retrieve all remaining menu items
@@ -72,5 +106,31 @@ async def delete_user(user_id: int, db: Session = Depends(get_db)):
 
     # Commit the changes to the database
     db.commit()
+    return "User updated successfully."
 
-    return "User deleted successfully."
+# Delete user by ID - admin only
+@users_router.delete('/admin/users/{user_id}')
+async def delete_user(user_id: int, db: Session = Depends(get_db), current_user: models.Users = Depends(oauth.get_current_user)):
+    if current_user.is_admin == False:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Unauthorized")
+    else:
+        user = db.query(models.Users).filter(models.Users.user_id == user_id).first()
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"User with ID {user_id} not found."
+            )
+
+        db.delete(user)
+        db.commit()
+
+        # Retrieve all remaining menu items
+        remaining_users = db.query(models.Users).all()
+
+        # Reorder the menu IDs
+        for index, item in enumerate(remaining_users, start=1):
+            item.user_id = index
+
+        # Commit the changes to the database
+        db.commit()
+        return "User deleted successfully."

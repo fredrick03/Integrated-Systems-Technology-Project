@@ -9,7 +9,7 @@ COPY . /TST-UCANTEEN
 WORKDIR /TST-UCANTEEN
 
 # Install any necessary dependencies
-RUN pip install fastapi uvicorn SQLalchemy pydantic[email] pydantic-settings pymysql python-jose[cryptography] PyJWT passlib
+RUN pip install fastapi uvicorn SQLalchemy pydantic[email] pydantic-settings pymysql python-jose[cryptography] PyJWT passlib shapely haversine
 
 # Command to run the FastAPI server when the container starts
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
