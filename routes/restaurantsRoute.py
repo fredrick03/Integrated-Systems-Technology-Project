@@ -88,10 +88,10 @@ async def add_resto(item: Restaurants, db: Session = Depends(get_db), current_us
             db.add(restaurant)
             db.commit()
 
-            # Retrieve all remaining menu items
+            # Retrieve all remaining resto items
             remaining_restaurants = db.query(models.Restaurants).all()
 
-            # Reorder the menu IDs
+            # Reorder the resto IDs
             for index, item in enumerate(remaining_restaurants, start=1):
                 item.restaurant_id = index
 
@@ -128,7 +128,7 @@ async def update_resto(restaurant_id: int, item: Restaurants, db: Session = Depe
                     setattr(restaurant, key, value)
 
                 db.commit()
-                # Retrieve all remaining menu items
+                # Retrieve all remaining resto items
                 remaining_restaurants = db.query(models.Restaurants).all()
 
                 # Reorder the restaurant IDs
@@ -155,10 +155,10 @@ async def delete_resto(restaurant_id: int, db: Session = Depends(get_db), curren
             db.delete(restaurant)
             db.commit()
 
-            # Retrieve all remaining menu items
+            # Retrieve all remaining resto items
             remaining_restaurants = db.query(models.Restaurants).all()
 
-            # Reorder the menu IDs
+            # Reorder the resto IDs
             for index, item in enumerate(remaining_restaurants, start=1):
                 item.restaurant_id = index
 

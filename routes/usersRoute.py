@@ -27,10 +27,10 @@ async def add_user(item: Users, db: Session = Depends(get_db)):
     db.add(user)
     db.commit()
     
-    # Retrieve all remaining menu items
+    # Retrieve all remaining user items
     remaining_users = db.query(models.Users).all()
 
-    # Reorder the menu IDs
+    # Reorder the user IDs
     for index, item in enumerate(remaining_users, start=1):
         item.user_id = index
 
@@ -103,10 +103,10 @@ async def update_current_user_data(item: Users, current_user: models.Users = Dep
         setattr(current_user, key, value)
     db.commit()
 
-    # Retrieve all remaining menu items
+    # Retrieve all remaining user items
     remaining_users = db.query(models.Users).all()
 
-    # Reorder the menu IDs
+    # Reorder the user IDs
     for index, item in enumerate(remaining_users, start=1):
         item.user_id = index
 
@@ -130,10 +130,10 @@ async def delete_user(user_id: int, db: Session = Depends(get_db), current_user:
         db.delete(user)
         db.commit()
 
-        # Retrieve all remaining menu items
+        # Retrieve all remaining user items
         remaining_users = db.query(models.Users).all()
 
-        # Reorder the menu IDs
+        # Reorder the user IDs
         for index, item in enumerate(remaining_users, start=1):
             item.user_id = index
 
