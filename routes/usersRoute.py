@@ -99,6 +99,8 @@ async def retrieve_current_user_data(db: Session = Depends(get_db), current_user
 # Update current user data - all users
 @users_router.put('/users/myaccount')
 async def update_current_user_data(item: Users, current_user: models.Users = Depends(oauth.get_current_user), db: Session = Depends(get_db)):
+    hashed_password = auth_utils.hash(item.password)
+    item.password = hashed_password
     for key, value in item.dict().items():
         setattr(current_user, key, value)
     db.commit()
@@ -113,6 +115,14 @@ async def update_current_user_data(item: Users, current_user: models.Users = Dep
     # Commit the changes to the database
     db.commit()
     return "User updated successfully."
+
+# Update current user location - all users
+@users_router.put('/users/location')
+async def update_current_user_data(location: str, current_user: models.Users = Depends(oauth.get_current_user), db: Session = Depends(get_db)):
+    current_user.university_name = location
+    db.commit()
+    db.refresh(current_user)  
+    return "User's location updated successfully."
 
 # Delete user by ID - admin only
 @users_router.delete('/admin/users/{user_id}')
