@@ -9,7 +9,6 @@ import {
   FormLabel,
   Input,
   InputGroup,
-  HStack,
   InputRightElement,
   Stack,
   Button,
@@ -129,13 +128,10 @@ const Register = () => {
         minH={'100vh'}
         align={'center'}
         justify={'center'}
-        bg={useColorModeValue('gray.50', 'gray.800')}>
+        bg={useColorModeValue('#1C5739', 'gray.800')}>
         <Stack spacing={8} mx={'auto'} maxW={'lg'} py={12} px={6}>
             <Stack align={'center'}>
-                <Heading fontSize={'4xl'}>Welcome to Bali Culinear</Heading>
-                <Text fontSize={'lg'} color={'gray.600'}>
-                    Your Guidebook To Bali
-                </Text>
+                <Heading fontSize={'4xl'} textColor={'white'}>Welcome to Bali Culinear</Heading>
             </Stack>
             <Box
                 rounded={'lg'}
@@ -179,19 +175,19 @@ const Register = () => {
                     <Input type="text" value={phone_number} onChange={handlePhoneNumberChange} required />
                     </FormControl>
                     <Stack align={'center'}>
-                    <Text fontSize={'md'} color={'gray.600'}>
+                    <Text fontSize={'md'} color={'black'}>
                         {error && <p style={{ color: 'red' }}>{error}</p>}
                         <Link to={`/`}>
-                            <strong>Already a user?</strong>
+                            <Text>Already a user? Login here</Text>
                         </Link>
                     </Text>
                     </Stack>
                     <Stack spacing={10} mt={5}>
                     <Button  type="submit"
-                        bg={'blue.200'}
+                        bg={'#1C5739'}
                         color={'white'}
                         _hover={{
-                        bg: 'teal.200',
+                        bg: '#D4E09B',
                         }}>
                         Register
                     </Button>

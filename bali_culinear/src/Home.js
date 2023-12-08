@@ -17,20 +17,15 @@ import {
   Menu,
   MenuButton,
   MenuList,
-  MenuItem,
   HStack,
   Stack,
-  Avatar,
   useDisclosure,
 } from '@chakra-ui/react';
 import {
-  Search2Icon,
-  AddIcon,
   HamburgerIcon,
-  CloseIcon,
 } from '@chakra-ui/icons';
 
-const Links = ['Home', 'Itinerary', 'Loan'];
+const Links = ['Home', 'Itinerary'];
 
 const NavLink = ({ children }) => (
   <Button as={Link} to={'#'}>
@@ -39,26 +34,16 @@ const NavLink = ({ children }) => (
 );
 
 const Home = () => {
-  const [token1, setToken1] = useState('');
-  const [username, setUsername] = useState('');
   const [destinations, setDestinations] = useState([]);
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const storedToken1 = sessionStorage.getItem('token1');
+  const username = sessionStorage.getItem('username');
 
   useEffect(() => {
-    // Ambil token dari sessionStorage atau localStorage saat komponen dipasang
-    const storedToken1 = sessionStorage.getItem('token1');
-    console.log('Token1:', storedToken1);
-    setToken1(storedToken1 || ''); // Jika tidak ada token, gunakan string kosong
-
-    const storedUsername = sessionStorage.getItem('username');
-    console.log('Username:', storedUsername);
-    setUsername(storedUsername || ''); // Jika tidak ada token, gunakan string kosong
-
-    // Ambil data destinasi dari API saat komponen dipasang
-    axios
-      .get('https://ayokebalitst.azurewebsites.net/destination', {
+    // fetch destination data
+    axios.get('https://ayokebalitst.azurewebsites.net/destination', {
         headers: {
-          Authorization: `Bearer ${token1}`, // Menggunakan token1 dalam header Authorization
+          Authorization: `Bearer ${storedToken1}`,
         },
       })
       .then((response) => {
@@ -67,19 +52,19 @@ const Home = () => {
       .catch((error) => {
         console.error('Error fetching destinations:', error);
       });
-  }, [token1]); // Perubahan token1 akan memicu pengambilan data ulang
+  }, [storedToken1]);
 
   const Logout = () => {
     sessionStorage.setItem('token1', '');
     sessionStorage.setItem('token2', '');
   };
 
-  const bgColor = useColorModeValue('teal.200', 'teal.900');
-  const boxColor = useColorModeValue('white', 'gray.700');
+  const bgColor = useColorModeValue('#1C5739', 'teal.900');
+  const boxColor = useColorModeValue('#D4E09B', 'gray.700');
 
   return (
-    <Box>
-      {token1 ? (
+    <Box color={'#F5FFF5'}>
+      {storedToken1 ? (
         <Box bg={bgColor} px={4}>
           <Flex h={16} alignItems={'center'} justifyContent={'space-between'}>
             <IconButton
@@ -89,34 +74,42 @@ const Home = () => {
               display={{ md: 'none' }}
               onClick={isOpen ? onClose : onOpen}
             />
-            <HStack spacing={8} alignItems={'center'}>
+            <HStack spacing={8} alignItems={'center'} textColor={'white'}>
               <Box>BALI CULINEAR</Box>
               <HStack as={'nav'} spacing={4} display={{ base: 'none', md: 'flex' }}>
                 {Links.map((link) => (
                   <Button
-                    bg={bgColor}
-                    key={link}
-                    as={Link}
-                    to={`/${link.toLowerCase()}`}
-                    variant="ghost"
-                  >
-                    {link}
-                  </Button>
+                  bg={bgColor}
+                  key={link}
+                  as={Link}
+                  to={`/${link.toLowerCase()}`}
+                  variant="ghost"
+                  color={'white'}
+                  _hover={{
+                    bg: '#D4E09B',
+                    }}
+                >
+                  {link}
+                </Button>
                 ))}
               </HStack>
             </HStack>
             <Flex alignItems={'center'}>
               <Menu>
-                <MenuButton
+              <MenuButton
                   as={Button}
                   rounded={'full'}
+                  bg={bgColor}
+                  color={'white'}
                   cursor={'pointer'}
-                  minW={0}
-                >
+                  _hover={{
+                    bg: '#D4E09B',
+                    }}
+                  minW={0}>
                   <Text>Hi, {username.toUpperCase()}</Text>
                 </MenuButton>
                 <MenuList>
-                  <Link to="/" onClick={Logout}>
+                  <Link to="/login" onClick={Logout} style={{color:'black'}}>
                     Logout
                   </Link>
                 </MenuList>
@@ -142,16 +135,16 @@ const Home = () => {
         align={'center'}
         justify={'center'}
         textAlign="center"
-        mt={token1 ? 0 : 10}
+        mt={storedToken1 ? 0 : 10}
         mx={10}
       >
         {/* Konten utama */}
-        {token1 ? (
+        {storedToken1 ? (
           <Box margin="auto">
-            <Heading fontSize={'5xl'} mb={8} mt={5}>
+            <Heading fontSize={'4xl'} mb={8} mt={5} color={'#1C5739'}>
               Where to Go in Bali
             </Heading>
-            <Button bg={'teal.200'} as={Link} to={`/add-itinerary`} mb={4}>
+            <Button bg={'#1C5739'} as={Link} to={`/add-itinerary`} mb={4} color={'white'}>
               Create Itinerary
             </Button>
 
@@ -170,9 +163,10 @@ const Home = () => {
                     <CardBody>{destination.location}</CardBody>
                     <CardFooter align={'center'} justify={'center'}>
                       <Button
-                        bg={'teal.200'}
+                        bg={'#1C5739'}
                         as={Link}
                         to={`/destination/${destination.destination_id}`}
+                        color={'#F5FFF5'}
                       >
                         Details
                       </Button>

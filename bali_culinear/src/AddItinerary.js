@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+
 import {
   Box,
   Flex,
@@ -18,18 +19,13 @@ import {
   Menu,
   MenuButton,
   MenuList,
-  MenuItem,
-  MenuDivider,
-  Avatar,
   Text,
-  Badge,
   InputGroup,
-  InputRightElement,
   IconButton,
 } from '@chakra-ui/react';
 import { HamburgerIcon } from '@chakra-ui/icons';
 
-const Links = [ 'Home','Itinerary', 'Loan'];
+const Links = ['Home', 'Itinerary'];
 
 const NavLink = ({ children }) => (
   <Button as={Link} to={'#'}>
@@ -38,59 +34,57 @@ const NavLink = ({ children }) => (
 );
 
 const AddItinerary = () => {
-    const username = sessionStorage.getItem('username');
-    const storedToken1 = sessionStorage.getItem('token1');
-    const { isOpen, onOpen, onClose } = useDisclosure()
+  const username = sessionStorage.getItem('username');
+  const storedToken1 = sessionStorage.getItem('token1');
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const navigate = useNavigate();
 
-    const [itineraryData, setItineraryData] = useState({
-      id: 0,
-      username: username,
-      date: '',
-      lama_kunjungan: '',
-      accommodation: '',
-      destination: [],
-      estimasi_budget: 0,
-    });
+  const [itineraryData, setItineraryData] = useState({
+    id: 0,
+    username: username,
+    date: '',
+    lama_kunjungan: '',
+    accommodation: '',
+    destination: [],
+    estimasi_budget: 0,
+  });
 
-    const generateRandomId = () => {
-      return Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
-    };
-  
-    const isIdAvailable = async (itineraryId) => {
-      try {
-        const response = await axios.get(`https://ayokebalitst.azurewebsites.net/itinerary/${itineraryId}`, {
-          headers: {
-            Authorization: `Bearer ${storedToken1}`,
-          },
-        });
+  const generateRandomId = () => {
+    return Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
+  };
+
+  const isIdAvailable = async (itineraryId) => {
+    try {
+      const response = await axios.get(`https://ayokebalitst.azurewebsites.net/itinerary/${itineraryId}`, {
+        headers: {
+          Authorization: `Bearer ${storedToken1}`,
+        },
+      });
+      
+      if (response.status){
+        return false
+      }  // Jika 404, artinya id belum digunakan
+    } catch (error) {
+      return true;  // Anda dapat menangani error sesuai kebutuhan aplikasi Anda
+    }
+  };
+
+  const getAvailableId = async () => {
+    const maxAttempts = 10;
+
+    for (let i = 0; i < maxAttempts; i++) {
+      const randomId = generateRandomId();
+      const idAvailable = await isIdAvailable(randomId);
+
+      if (idAvailable) {
         
-        if (response.status){
-          return false
-        }  // Jika 404, artinya id belum digunakan
-      } catch (error) {
-        return true;  // Anda dapat menangani error sesuai kebutuhan aplikasi Anda
+        return randomId;
       }
-    };
-  
-    const getAvailableId = async () => {
-      const maxAttempts = 10;
-  
-      for (let i = 0; i < maxAttempts; i++) {
-        const randomId = generateRandomId();
-        const idAvailable = await isIdAvailable(randomId);
-  
-        if (idAvailable) {
-          setItineraryData((prevData) => ({
-            id: Number(randomId),
-            ...prevData,
-          }));
-          return;
-        }
-      }
-  
-      console.error(`Failed to get an available id after ${maxAttempts} attempts`);
-      // Handle the failure case as needed for your application
-    };
+    }
+
+    console.error(`Failed to get an available id after ${maxAttempts} attempts`);
+    // Handle the failure case as needed for your application
+  };
 
   const [destinationsList, setDestinations] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -111,7 +105,7 @@ const AddItinerary = () => {
     };
 
     fetchDestinations();
-  }, []); // Fetch destinasi hanya sekali saat komponen dimount
+  }, [storedToken1]); // Fetch destinasi hanya sekali saat komponen dimount
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -132,15 +126,12 @@ const AddItinerary = () => {
         }));
 
         // Update destinationNames with the new destination name
-        const selectedDestination = destinationsList.find(dest => dest.destination_id === destinationId);
+        const selectedDestination = destinationsList.find((dest) => dest.destination_id === destinationId);
         if (selectedDestination) {
           setDestinationNames((prevNames) => [...prevNames, selectedDestination.name]);
         }
-
-        // setSearchQuery(''); // Clear the searchQuery after successfully adding the destination
       } else {
         alert('Destination already exists in the itinerary.');
-        // Provide feedback if destinationId already exists
       }
     } else {
       alert('Invalid Destination ID.');
@@ -161,7 +152,7 @@ const AddItinerary = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    await getAvailableId();
+    const randomID = await getAvailableId();
 
     const lama_kunjungan = Number(itineraryData.lama_kunjungan);
     if (!isNaN(lama_kunjungan)) {
@@ -175,7 +166,7 @@ const AddItinerary = () => {
       const response = await axios.post(
         'https://ayokebalitst.azurewebsites.net/itinerary',
         {
-          id: itineraryData.id,
+          id: randomID,
           username: itineraryData.username,
           date: itineraryData.date,
           lama_kunjungan: itineraryData.lama_kunjungan,
@@ -190,72 +181,94 @@ const AddItinerary = () => {
           },
         }
       );
+      console.log(response);
       // Handle redirect or other actions after successful submission
     } catch (error) {
       console.error('Error submitting itinerary:', error);
     }
-    window.location.href = '/itinerary';
+    navigate('/itinerary');
   };
+
 
   const Logout = () => {
     sessionStorage.setItem('token1', '');
     sessionStorage.setItem('token2', '');
   };
 
+  const bgColor = useColorModeValue('#1C5739', 'teal.900');
+  const boxColor = useColorModeValue('#D4E09B', 'gray.700');
   return (
     <Box>
-      <Box bg={useColorModeValue('teal.200', 'teal.900')} px={4}>
-          <Flex h={16} alignItems={'center'} justifyContent={'space-between'}>
-            <IconButton
-              size={'md'}
-              icon={<HamburgerIcon />}
-              aria-label={'Open Menu'}
-              display={{ md: 'none' }}
-              onClick={isOpen ? onClose : onOpen}
-            />
-            <HStack spacing={8} alignItems={'center'}>
-              <Box>BALI CULINEAR</Box>
-              <HStack as={'nav'} spacing={4} display={{ base: 'none', md: 'flex' }}>
-                {Links.map((link) => (
-                  <Button bg={'teal.200'} key={link} as={Link} to={`/${link.toLowerCase()}`} variant="ghost">
-                    {link}
-                  </Button>
-                ))}
-              </HStack>
+      <Box bg={useColorModeValue('#1C5739', 'teal.900')} px={4}>
+        <Flex h={16} alignItems={'center'} justifyContent={'space-between'}>
+          <IconButton
+            size={'md'}
+            icon={<HamburgerIcon />}
+            aria-label={'Open Menu'}
+            display={{ md: 'none' }}
+            onClick={isOpen ? onClose : onOpen}
+          />
+          <HStack spacing={8} alignItems={'center'}>
+            <Box color={'white'}>BALI CULINEAR</Box>
+            <HStack as={'nav'} spacing={4} display={{ base: 'none', md: 'flex' }}>
+              {Links.map((link) => (
+                <Button
+                bg={bgColor}
+                key={link}
+                as={Link}
+                to={`/${link.toLowerCase()}`}
+                variant="ghost"
+                color={'white'}
+                _hover={{
+                  bg: '#D4E09B',
+                  }}
+              >
+                {link}
+              </Button>
+              ))}
             </HStack>
-            <Flex alignItems={'center'}>
-              <Menu>
-                <MenuButton
+          </HStack>
+          <Flex alignItems={'center'}>
+            <Menu>
+            <MenuButton
                   as={Button}
                   rounded={'full'}
+                  bg={bgColor}
+                  color={'white'}
                   cursor={'pointer'}
+                  _hover={{
+                    bg: '#D4E09B',
+                    }}
                   minW={0}>
-                  <Text>Hello, {username.toUpperCase()}</Text>
+                  <Text>Hi, {username.toUpperCase()}</Text>
                 </MenuButton>
-                <MenuList>
-                  <Link to="/" onClick={Logout}>Logout</Link>
-                </MenuList>
-              </Menu>
-            </Flex>
+              <MenuList>
+                <Link to="/login" onClick={Logout}>
+                  Logout
+                </Link>
+              </MenuList>
+            </Menu>
           </Flex>
+        </Flex>
 
-          {isOpen ? (
-            <Box pb={4} display={{ md: 'none' }}>
-              <Stack as={'nav'} spacing={4}>
-                {Links.map((link) => (
-                  <NavLink key={link} to={`/${link.toLowerCase()}`}>{link}</NavLink>
-                ))}
-              </Stack>
-            </Box>
-          ) : null}
-
+        {isOpen ? (
+          <Box pb={4} display={{ md: 'none' }}>
+            <Stack as={'nav'} spacing={4}>
+              {Links.map((link) => (
+                <NavLink key={link} to={`/${link.toLowerCase()}`}>
+                  {link}
+                </NavLink>
+              ))}
+            </Stack>
+          </Box>
+        ) : null}
       </Box>
-      
-      <Heading fontSize={'5xl'} mb={8} mt={5}>
+
+      <Heading fontSize={'4xl'} mb={8} mt={5} color={'#1C5739'}>
         Plan Your Bali Trip
       </Heading>
       <Box mx={40}>
-        <form onSubmit={handleSubmit} >
+        <form onSubmit={handleSubmit}>
           <VStack align="start">
             <FormControl id="date" isRequired>
               <FormLabel>Date</FormLabel>
@@ -291,16 +304,14 @@ const AddItinerary = () => {
             <FormControl id="destination">
               <FormLabel>Destination</FormLabel>
               <InputGroup>
-                <Select 
+                <Select
                   name="searchQuery"
                   value={searchQuery}
                   onChange={handleAddDestination} // Pass the event to handleAddDestination
                   placeholder="Choose your destination"
                 >
                   {destinationsList.map((destination) => (
-                    <option
-                      key={destination.destination_id}
-                      value={destination.destination_id}>
+                    <option key={destination.destination_id} value={destination.destination_id}>
                       ({destination.location.toUpperCase()}) - {destination.name}
                     </option>
                   ))}
@@ -314,17 +325,19 @@ const AddItinerary = () => {
                 <FormLabel> Your destinations in Bali: </FormLabel>
               </Text>
               {destinationNames.map((name, index) => (
-                <Text key={index} fontSize="14"> {index+1}. {name}
+                <Text key={index} fontSize="14">
+                  {' '}
+                  {index + 1}. {name}
                 </Text>
               ))}
             </VStack>
 
-            <Button type="submit" bg="teal.200" mt={4} mx="auto">
+            <Button type="submit" bg="#1C5739" mt={4} mx="auto" textColor={'#F5FFF5'}>
               Create
             </Button>
           </VStack>
         </form>
-        </Box>
+      </Box>
     </Box>
   );
 };

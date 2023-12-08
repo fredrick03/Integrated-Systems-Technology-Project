@@ -5,7 +5,6 @@ import {
   Box,
   Heading,
   Text,
-  SimpleGrid,
   Badge,
   Flex,
   IconButton,
@@ -16,16 +15,16 @@ import {
   Menu,
   MenuButton,
   MenuList,
-  MenuItem,
-  MenuDivider,
   Button,
-  Avatar,
   Stack
 } from '@chakra-ui/react';
 import { HamburgerIcon } from '@chakra-ui/icons';
 import DestinationModal from './DestinationModal'; // Import the new component  
+import { Wrap, WrapItem } from '@chakra-ui/react';
 
-const Links = [ 'Home','Itinerary', 'Loan'];
+
+
+const Links = [ 'Home','Itinerary'];
 
 const NavLink = ({ children }) => (
   <Button as={Link} to={'#'}>
@@ -35,12 +34,11 @@ const NavLink = ({ children }) => (
 
 const Itinerary = () => {
   const [itineraries, setItineraries] = useState([]);
-  const username = sessionStorage.getItem('username');
   const { isOpen, onOpen, onClose } = useDisclosure()
-  const storedToken1 = sessionStorage.getItem('token1');
-
   const [selectedItinerary, setSelectedItinerary] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const username = sessionStorage.getItem('username');
+  const storedToken1 = sessionStorage.getItem('token1');
 
   const handleStartItinerary = (itinerary) => {
     setSelectedItinerary(itinerary);
@@ -56,8 +54,6 @@ const Itinerary = () => {
   }, [username]);
 
   const fetchData = async () => {
-      
-
     if (username) {
       try {
         // Fetch data itinerary berdasarkan username dari API
@@ -116,9 +112,12 @@ const Itinerary = () => {
     sessionStorage.setItem('token2', '');
   };
 
+  const bgColor = useColorModeValue('#1C5739', 'teal.900');
+  const boxColor = useColorModeValue('#D4E09B', 'gray.700');
+
   return (
     <Box>
-        <Box bg={useColorModeValue('teal.200', 'teal.900')} px={4}>
+        <Box bg={bgColor} px={4}>
           <Flex h={16} alignItems={'center'} justifyContent={'space-between'}>
             <IconButton
               size={'md'}
@@ -127,13 +126,23 @@ const Itinerary = () => {
               display={{ md: 'none' }}
               onClick={isOpen ? onClose : onOpen}
             />
-            <HStack spacing={8} alignItems={'center'}>
+            <HStack spacing={8} alignItems={'center'} textColor={'white'}>
               <Box>BALI CULINEAR</Box>
               <HStack as={'nav'} spacing={4} display={{ base: 'none', md: 'flex' }}>
                 {Links.map((link) => (
-                  <Button bg={'teal.200'} key={link} as={Link} to={`/${link.toLowerCase()}`} variant="ghost">
-                    {link}
-                  </Button>
+                  <Button
+                  bg={bgColor}
+                  key={link}
+                  as={Link}
+                  to={`/${link.toLowerCase()}`}
+                  variant="ghost"
+                  color={'white'}
+                  _hover={{
+                    bg: '#D4E09B',
+                    }}
+                >
+                  {link}
+                </Button>
                 ))}
               </HStack>
             </HStack>
@@ -142,12 +151,17 @@ const Itinerary = () => {
                 <MenuButton
                   as={Button}
                   rounded={'full'}
+                  bg={bgColor}
+                  color={'white'}
                   cursor={'pointer'}
+                  _hover={{
+                    bg: '#D4E09B',
+                    }}
                   minW={0}>
-                  <Text>Hello, {username.toUpperCase()}</Text>
+                  <Text>Hi, {username.toUpperCase()}</Text>
                 </MenuButton>
                 <MenuList>
-                  <Link to="/" onClick={Logout}>Logout</Link>
+                  <Link to="/login" onClick={Logout}>Logout</Link>
                 </MenuList>
               </Menu>
             </Flex>
@@ -163,34 +177,41 @@ const Itinerary = () => {
             </Box>
           ) : null}
         </Box>
-      <Heading mb={4} mt={4}>Your Bali Itinerary</Heading>
-      <Button bg={'teal.200'} as={Link} to={`/create-itinerary`} mb={4}>
+      <Heading fontSize={'4xl'} mb={4} mt={4} color={'#1C5739'}>Your Bali Itinerary</Heading>
+      <Button bg={'#1C5739'} as={Link} to={`/add-itinerary`} mb={4} color={'#F5FFF5'}>
         Create Itinerary
       </Button>
+
       {itineraries.map(itinerary => (
-        <Box key={itinerary.id} borderWidth="3px" borderRadius="lg" p={6} mx={15} mb={5}>
+        <Box key={itinerary.id} borderWidth="2px" borderColor={'#1C5739'} borderRadius="lg" p={6} mx={10} mb={5}>
           <VStack align="start">
             <Text>Date: {itinerary.date}</Text>
             <Text>Trip Duration: {itinerary.lama_kunjungan} days</Text>
             <Text>Accommodation: {itinerary.accommodation} hotel</Text>
 
-            <HStack>
+            <Wrap spacing={2} mb={2}>
               <Text>Destinations:</Text>
-              {itinerary.destination.map(destination => (
-                <Badge key={destination.destination_id} colorScheme="blue" ml={0}>
-                  {destination.name} ({destination.location})
-                </Badge>
+              {itinerary.destination.map((destination) => (
+                <WrapItem key={destination.destination_id}>
+                  <Badge colorScheme=''>
+                    {destination.name} ({destination.location})
+                  </Badge>
+                </WrapItem>
               ))}
-            </HStack>
+            </Wrap>
+
 
             <Text>Estimated Budget: Rp {itinerary.estimasi_budget.toLocaleString()}</Text>
 
             {/* Tombol Delete */}
             <Flex alignItems={'center'} justifyContent={'space-between'}>
             <Button
-              bg={'green.400'}
+              bg={'#1C5739'}
               color={'white'}
               onClick={() => handleStartItinerary(itinerary)}
+              _hover={{
+                bg: '#D4E09B'
+                }}
               mr={4}
               mt={4}
               mb={2}

@@ -15,10 +15,7 @@ import {
   Menu,
   MenuButton,
   MenuList,
-  MenuItem,
-  MenuDivider,
-  Button,
-  Avatar
+  Button
 } from '@chakra-ui/react';
 import { HamburgerIcon } from '@chakra-ui/icons';
 import { Spinner } from '@chakra-ui/react';
@@ -34,26 +31,16 @@ const NavLink = ({ children }) => (
 const DestinationDetail = () => {
   const { id } = useParams();
   const [destination, setDestination] = useState(null);
-  const [token1, setToken1] = useState('');
-  const [username, setUsername] = useState('');
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const storedToken1 = sessionStorage.getItem('token1');
+  const username = sessionStorage.getItem('username');
 
   useEffect(() => {
-    // Ambil token dari sessionStorage atau localStorage saat komponen dipasang
-    const storedToken1 = sessionStorage.getItem('token1');
-    setToken1(storedToken1 || ''); // Jika tidak ada token, gunakan string kosong
-
-    const storedUsername = sessionStorage.getItem('username');
-    setUsername(storedUsername || ''); // Jika tidak ada token, gunakan string kosong
-  }, []);
-
-  useEffect(() => {
-    // Ambil data destinasi berdasarkan ID dari API saat komponen dipasang
-    if (token1 && id) {
+    if (storedToken1 && id) {
       axios
         .get(`https://ayokebalitst.azurewebsites.net/destination/${id}`, {
           headers: {
-            Authorization: `Bearer ${token1}`, // Menyertakan token dalam header Authorization
+            Authorization: `Bearer ${storedToken1}`,
           },
         })
         .then((response) => {
@@ -63,19 +50,20 @@ const DestinationDetail = () => {
           console.error('Error fetching destination details:', error);
         });
     }
-  }, [id, token1]);
+  }, [id, storedToken1]);
 
   const Logout = () => {
     sessionStorage.setItem('token1', '');
     sessionStorage.setItem('token2', '');
   };
 
-  const bgColor = useColorModeValue('white', 'gray.700');
+  const bgColor = useColorModeValue('#1C5739', 'gray.700');
   const boxShadow = useColorModeValue('lg', 'dark-lg');
 
+
   return (
-    <Box>
-      <Box bg={useColorModeValue('teal.200', 'teal.900')} px={4}>
+    <Box bg={'#F5FFF5'}>
+      <Box bg={useColorModeValue('#1C5739', 'teal.900')} px={4}>
         <Flex h={16} alignItems={'center'} justifyContent={'space-between'}>
           <IconButton
             size={'md'}
@@ -84,41 +72,46 @@ const DestinationDetail = () => {
             display={{ md: 'none' }}
             onClick={isOpen ? onClose : onOpen}
           />
-          <HStack spacing={8} alignItems={'center'}>
-            <Box>BALI CULINEAR</Box>
-            <HStack as={'nav'} spacing={4} display={{ base: 'none', md: 'flex' }}>
-              {Links.map((link) => (
-                <Button
-                  bg={'teal.200'}
+             <HStack spacing={8} alignItems={'center'} textColor={'white'}>
+              <Box>BALI CULINEAR</Box>
+              <HStack as={'nav'} spacing={4} display={{ base: 'none', md: 'flex' }}>
+                {Links.map((link) => (
+                  <Button
+                  bg={bgColor}
                   key={link}
                   as={Link}
                   to={`/${link.toLowerCase()}`}
                   variant="ghost"
+                  color={'white'}
+                  _hover={{
+                    bg: '#D4E09B',
+                    }}
                 >
                   {link}
                 </Button>
-              ))}
+                ))}
+              </HStack>
             </HStack>
-          </HStack>
-          <Flex alignItems={'center'}>
-            <Menu>
+            <Flex alignItems={'center'}>
+              <Menu>
               <MenuButton
-                as={Button}
-                rounded={'full'}
-                cursor={'pointer'}
-                minW={0}
-              >
-                <Text>Hello, {username.toUpperCase()}</Text>
-              </MenuButton>
-              <MenuList>
-                <Link to="/" onClick={Logout}>
-                  Logout
-                </Link>
-              </MenuList>
-            </Menu>
+                  as={Button}
+                  rounded={'full'}
+                  bg={bgColor}
+                  color={'white'}
+                  cursor={'pointer'}
+                  _hover={{
+                    bg: '#D4E09B',
+                    }}
+                  minW={0}>
+                  <Text>Hi, {username.toUpperCase()}</Text>
+                </MenuButton>
+                <MenuList>
+                  <Link to="/login" onClick={Logout}>Logout</Link>
+                </MenuList>
+              </Menu>
+            </Flex>
           </Flex>
-        </Flex>
-
         {isOpen ? (
           <Box pb={4} display={{ md: 'none' }}>
             <Stack as={'nav'} spacing={4}>
@@ -139,8 +132,8 @@ const DestinationDetail = () => {
       >
         <Stack spacing={8} mx={'auto'} maxW={'lg'} py={12} px={6}>
           {destination ? (
-            <Box rounded={'lg'} bg={bgColor} boxShadow={boxShadow} p={8}>
-              <Heading as="h2" mb={4}>
+            <Box rounded={'lg'} bg={"#D4E09B"} boxShadow={boxShadow} p={8}>
+              <Heading as="h2" mb={4} color={'#1C5739'}>
                 {destination.name}
               </Heading>
 

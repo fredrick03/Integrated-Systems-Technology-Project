@@ -9,7 +9,6 @@ import {
   Card,
   CardHeader,
   CardBody,
-  CardFooter,
   Button,
   useColorModeValue,
   Text,
@@ -17,22 +16,15 @@ import {
   Menu,
   MenuButton,
   MenuList,
-  MenuItem,
   HStack,
   Stack,
-  Avatar,
   useDisclosure,
 } from '@chakra-ui/react';
 import {
-  Search2Icon,
-  AddIcon,
   HamburgerIcon,
-  CloseIcon,
 } from '@chakra-ui/icons';
-import { useParams } from 'react-router-dom';
 
-
-const Links = ['Home', 'Itinerary', 'Loan'];
+const Links = ['Home', 'Itinerary'];
 
 const NavLink = ({ children }) => (
   <Button as={Link} to={'#'}>
@@ -41,39 +33,35 @@ const NavLink = ({ children }) => (
 );
 
 const RestaurantsNearbyMenu = () => {
-  const [token2, setToken2] = useState('');
-  const [username, setUsername] = useState('');
+  const storedToken2 = sessionStorage.getItem('token2');
+  const username = sessionStorage.getItem('username');
   const [restaurantMenu, setRestaurantMenu] = useState([]);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedRestaurant, setSelectedRestaurant] = useState({})
-  
+
   useEffect(() => {
-    const storedToken2 = sessionStorage.getItem('token2');
-    setToken2(storedToken2 || '');
-    console.log(token2);
-  
-    const storedUsername = sessionStorage.getItem('username');
-    setUsername(storedUsername || '');
-    console.log(username);
-  
     const storedSelectedRestaurant = sessionStorage.getItem('selectedRestaurant');
     const parsedSelectedRestaurant = JSON.parse(storedSelectedRestaurant) || {};
     setSelectedRestaurant(parsedSelectedRestaurant);
   
     if (parsedSelectedRestaurant.restaurant_name) {
+      console.log('Token:', storedToken2);
+      console.log('Selected Restaurant:', parsedSelectedRestaurant);
+
       axios.get(`http://ucanteen2.g3cwh8fvd9frdmeg.southeastasia.azurecontainer.io/users/restaurant/nearby/${parsedSelectedRestaurant.restaurant_name}/menu`, {
         headers: {
-          Authorization: `Bearer ${token2}`,
+          Authorization: `Bearer ${storedToken2}`,
         },
       })
         .then((response) => {
           setRestaurantMenu(response.data);
+        console.log(restaurantMenu);
         })
         .catch((error) => {
           console.error('Error fetching menu:', error);
         });
     }
-  }, [token2, selectedRestaurant]); // Dependency array for useEffect
+  }, [storedToken2, restaurantMenu]);
   
 
   const Logout = () => {
@@ -81,88 +69,86 @@ const RestaurantsNearbyMenu = () => {
     sessionStorage.setItem('token2', '');
   };
 
-  const bgColor = useColorModeValue('teal.200', 'teal.900');
+  const bgColor = useColorModeValue('#1C5739', 'teal.900');
   const boxColor = useColorModeValue('white', 'gray.700');
 
   return (
-    <Box>
-      {token2 ? (
-        <Box bg={bgColor} px={4}>
-          <Flex h={16} alignItems={'center'} justifyContent={'space-between'}>
-            <IconButton
-              size={'md'}
-              icon={<HamburgerIcon />}
-              aria-label={'Open Menu'}
-              display={{ md: 'none' }}
-              onClick={isOpen ? onClose : onOpen}
-            />
-            <HStack spacing={8} alignItems={'center'}>
+    <Box bg={'#F5FFF5'}>
+      <Box bg={useColorModeValue('#1C5739', 'teal.900')} px={4}>
+        <Flex h={16} alignItems={'center'} justifyContent={'space-between'}>
+          <IconButton
+            size={'md'}
+            icon={<HamburgerIcon />}
+            aria-label={'Open Menu'}
+            display={{ md: 'none' }}
+            onClick={isOpen ? onClose : onOpen}
+          />
+             <HStack spacing={8} alignItems={'center'} textColor={'white'}>
               <Box>BALI CULINEAR</Box>
               <HStack as={'nav'} spacing={4} display={{ base: 'none', md: 'flex' }}>
                 {Links.map((link) => (
                   <Button
-                    bg={bgColor}
-                    key={link}
-                    as={Link}
-                    to={`/${link.toLowerCase()}`}
-                    variant="ghost"
-                  >
-                    {link}
-                  </Button>
+                  bg={bgColor}
+                  key={link}
+                  as={Link}
+                  to={`/${link.toLowerCase()}`}
+                  variant="ghost"
+                  color={'white'}
+                  _hover={{
+                    bg: '#D4E09B',
+                    }}
+                >
+                  {link}
+                </Button>
                 ))}
               </HStack>
             </HStack>
             <Flex alignItems={'center'}>
               <Menu>
-                <MenuButton
+              <MenuButton
                   as={Button}
                   rounded={'full'}
+                  bg={bgColor}
+                  color={'white'}
                   cursor={'pointer'}
-                  minW={0}
-                >
+                  _hover={{
+                    bg: '#D4E09B',
+                    }}
+                  minW={0}>
                   <Text>Hi, {username.toUpperCase()}</Text>
                 </MenuButton>
                 <MenuList>
-                  <Link to="/login" onClick={Logout}>
-                    Logout
-                  </Link>
+                  <Link to="/login" onClick={Logout}>Logout</Link>
                 </MenuList>
               </Menu>
             </Flex>
           </Flex>
-
-          {isOpen ? (
-            <Box pb={4} display={{ md: 'none' }}>
-              <Stack as={'nav'} spacing={4}>
-                {Links.map((link) => (
-                  <NavLink key={link} to={`/${link.toLowerCase()}`}>
-                    {link}
-                  </NavLink>
-                ))}
-              </Stack>
-            </Box>
-          ) : null}
-        </Box>
-      ) : null}
-
-    <Flex
+        {isOpen ? (
+          <Box pb={4} display={{ md: 'none' }}>
+            <Stack as={'nav'} spacing={4}>
+              {Links.map((link) => (
+                <NavLink key={link} to={`/${link.toLowerCase()}`}>
+                  {link}
+                </NavLink>
+              ))}
+            </Stack>
+          </Box>
+        ) : null}
+      </Box>
+      <Flex
+        minH={'10vh'}
         align={'center'}
         justify={'center'}
-        textAlign="center"
-        mt={token2 ? 0 : 10}
-        mx={10}
+        bg={useColorModeValue('gray.50', 'gray.800')}
       >
-        {token2 ? (
+        {storedToken2 ? (
           <Box margin="auto">
             <Heading fontSize={'4xl'} mb={2} mt={5}>
-              Food Menu in,
+              {selectedRestaurant.restaurant_name} Menu
             </Heading>
-            <Heading fontSize={'4xl'} mb={8} mt={2}>{selectedRestaurant.restaurant_name}</Heading>
 
             {/* Display menu cards */}
             {restaurantMenu ? (
-              <p>Loading menu...</p>
-            ) : (
               <SimpleGrid spacing={10} mt={5} columns={[1, null, 3]}>
                 {restaurantMenu.map((menuItem) => (
                   <Card key={menuItem.menu_id} bg={boxColor}>
@@ -175,10 +161,12 @@ const RestaurantsNearbyMenu = () => {
                   </Card>
                 ))}
               </SimpleGrid>
+              ) : (
+              <p>Loading...</p>
             )}
           </Box>
         ) : (
-          <p>Anda tidak memiliki akses. Silakan login terlebih dahulu.</p>
+          <p>You don't have access. Please login</p>
         )}
       </Flex>
     </Box>
