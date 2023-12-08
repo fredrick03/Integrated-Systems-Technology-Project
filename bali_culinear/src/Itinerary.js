@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import {
@@ -49,11 +49,49 @@ const Itinerary = () => {
     setIsModalOpen(false);
   };
 
-  useEffect(() => {
-    fetchData();
-  }, [username]);
+  // useEffect(() => {
+  //   fetchData();
+  // }, [username, fetchData]);
 
-  const fetchData = async () => {
+  // const fetchData = async () => {
+  //   if (username) {
+  //     try {
+  //       // Fetch data itinerary berdasarkan username dari API
+  //       const response = await axios.get(`https://ayokebalitst.azurewebsites.net/itinerary/user/${username}`, {
+  //         headers: {
+  //           Authorization: `Bearer ${storedToken1}` // Menyertakan token dalam header Authorization
+  //         }
+  //       });
+
+  //       // Ambil data detail destinasi untuk setiap destination_id dalam itinerary
+  //       const itinerariesWithDestinations = await Promise.all(
+  //         response.data.map(async (itinerary) => {
+  //           const destinationDetails = await Promise.all(
+  //             itinerary.destination.map(async (destinationId) => {
+  //               const destinationResponse = await axios.get(`https://ayokebalitst.azurewebsites.net/destination/${destinationId}`, {
+  //                 headers: {
+  //                   Authorization: `Bearer ${storedToken1}` // Menyertakan token dalam header Authorization
+  //                 }
+  //               });
+  //               return destinationResponse.data;
+  //             })
+  //           );
+
+  //           return {
+  //             ...itinerary,
+  //             destination: destinationDetails,
+  //           };
+  //         })
+  //       );
+
+  //       setItineraries(itinerariesWithDestinations);
+  //     } catch (error) {
+  //       console.error('Error fetching itinerary data:', error);
+  //     }
+  //   }
+  // };
+
+  const fetchData = useCallback(async () => {
     if (username) {
       try {
         // Fetch data itinerary berdasarkan username dari API
@@ -89,7 +127,11 @@ const Itinerary = () => {
         console.error('Error fetching itinerary data:', error);
       }
     }
-  };
+  }, [username, storedToken1]);
+
+  useEffect(() => {
+    fetchData(); // Now you can use fetchData in useEffect without any warning
+  }, [fetchData]);
 
   const handleDeleteItinerary = async (itineraryId) => {
     try {
@@ -113,7 +155,6 @@ const Itinerary = () => {
   };
 
   const bgColor = useColorModeValue('#1C5739', 'teal.900');
-  const boxColor = useColorModeValue('#D4E09B', 'gray.700');
 
   return (
     <Box>

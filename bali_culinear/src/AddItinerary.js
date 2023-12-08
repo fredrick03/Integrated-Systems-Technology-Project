@@ -87,7 +87,7 @@ const AddItinerary = () => {
   };
 
   const [destinationsList, setDestinations] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery] = useState('');
   const [destinationNames, setDestinationNames] = useState([]);
 
   useEffect(() => {
@@ -196,7 +196,6 @@ const AddItinerary = () => {
   };
 
   const bgColor = useColorModeValue('#1C5739', 'teal.900');
-  const boxColor = useColorModeValue('#D4E09B', 'gray.700');
   return (
     <Box>
       <Box bg={useColorModeValue('#1C5739', 'teal.900')} px={4}>
