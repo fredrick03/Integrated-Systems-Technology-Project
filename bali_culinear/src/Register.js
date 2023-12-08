@@ -98,7 +98,7 @@ const Register = () => {
         // Check if both registrations were successful
         if (response1.data.username && response2.data.username) {
             alert('Registration Success!');
-            navigate('/Login');
+            navigate('/');
         } else {
             alert('Registration failed. Please try again.');
         }

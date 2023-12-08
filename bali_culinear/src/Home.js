@@ -109,7 +109,7 @@ const Home = () => {
                   <Text>Hi, {username.toUpperCase()}</Text>
                 </MenuButton>
                 <MenuList>
-                  <Link to="/login" onClick={Logout} style={{color:'black'}}>
+                  <Link to="/" onClick={Logout} style={{color:'black'}}>
                     Logout
                   </Link>
                 </MenuList>

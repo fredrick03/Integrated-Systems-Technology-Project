@@ -1,16 +1,3 @@
-// import './App.css';
-
-// function App() {
-//   return (
-//     <div>
-
-//     </div>
-//   );
-// }
-
-// export default App;
-
-// import './App.css';
 import React, { Fragment } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { ChakraProvider, CSSReset, Box } from '@chakra-ui/react';
@@ -69,7 +56,8 @@ const App = () => {
               path="/restaurant/nearby/:restaurantName/menu"
               element={<PrivateRoute element={<RestaurantsNearbyMenu />} />}
             />
-            <Route path="/login" element={<Login />} />
+
+            <Route path="/" element={<Login />} />
             <Route path="/register" element={<Register />} />
             
             </Routes>

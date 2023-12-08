@@ -243,7 +243,7 @@ const AddItinerary = () => {
                   <Text>Hi, {username.toUpperCase()}</Text>
                 </MenuButton>
               <MenuList>
-                <Link to="/login" onClick={Logout}>
+                <Link to="/" onClick={Logout}>
                   Logout
                 </Link>
               </MenuList>

@@ -161,7 +161,7 @@ const Itinerary = () => {
                   <Text>Hi, {username.toUpperCase()}</Text>
                 </MenuButton>
                 <MenuList>
-                  <Link to="/login" onClick={Logout}>Logout</Link>
+                  <Link to="/" onClick={Logout}>Logout</Link>
                 </MenuList>
               </Menu>
             </Flex>
