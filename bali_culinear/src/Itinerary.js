@@ -48,49 +48,7 @@ const Itinerary = () => {
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
-
-  // useEffect(() => {
-  //   fetchData();
-  // }, [username, fetchData]);
-
-  // const fetchData = async () => {
-  //   if (username) {
-  //     try {
-  //       // Fetch data itinerary berdasarkan username dari API
-  //       const response = await axios.get(`https://ayokebalitst.azurewebsites.net/itinerary/user/${username}`, {
-  //         headers: {
-  //           Authorization: `Bearer ${storedToken1}` // Menyertakan token dalam header Authorization
-  //         }
-  //       });
-
-  //       // Ambil data detail destinasi untuk setiap destination_id dalam itinerary
-  //       const itinerariesWithDestinations = await Promise.all(
-  //         response.data.map(async (itinerary) => {
-  //           const destinationDetails = await Promise.all(
-  //             itinerary.destination.map(async (destinationId) => {
-  //               const destinationResponse = await axios.get(`https://ayokebalitst.azurewebsites.net/destination/${destinationId}`, {
-  //                 headers: {
-  //                   Authorization: `Bearer ${storedToken1}` // Menyertakan token dalam header Authorization
-  //                 }
-  //               });
-  //               return destinationResponse.data;
-  //             })
-  //           );
-
-  //           return {
-  //             ...itinerary,
-  //             destination: destinationDetails,
-  //           };
-  //         })
-  //       );
-
-  //       setItineraries(itinerariesWithDestinations);
-  //     } catch (error) {
-  //       console.error('Error fetching itinerary data:', error);
-  //     }
-  //   }
-  // };
-
+  
   const fetchData = useCallback(async () => {
     if (username) {
       try {

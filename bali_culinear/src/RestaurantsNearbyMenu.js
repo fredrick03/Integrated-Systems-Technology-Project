@@ -48,7 +48,7 @@ const RestaurantsNearbyMenu = () => {
       console.log('Token:', storedToken2);
       console.log('Selected Restaurant:', parsedSelectedRestaurant);
 
-      axios.get(`http://ucanteen2.g3cwh8fvd9frdmeg.southeastasia.azurecontainer.io/users/restaurant/nearby/${parsedSelectedRestaurant.restaurant_name}/menu`, {
+      axios.get(`https://ucanteen.azurewebsites.net/users/restaurant/nearby/${parsedSelectedRestaurant.restaurant_name}/menu`, {
         headers: {
           Authorization: `Bearer ${storedToken2}`,
         },

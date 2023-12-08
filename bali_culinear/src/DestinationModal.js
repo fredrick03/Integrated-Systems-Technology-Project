@@ -27,7 +27,7 @@ const DestinationModal = ({ isOpen, onClose, itinerary }) => {
 
       // Send a request to update user data
       await axios.put(
-        `http://ucanteen2.g3cwh8fvd9frdmeg.southeastasia.azurecontainer.io/users/location?location=${userData.university_name}`,
+        `https://ucanteen.azurewebsites.net/users/location?location=${userData.university_name}`,
         userData,
         {
           headers: {

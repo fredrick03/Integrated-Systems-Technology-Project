@@ -47,7 +47,7 @@ const RestaurantsNearby = () => {
     const storedLocation = sessionStorage.getItem('location');
     setLocation(storedLocation || '');
 
-    axios.get('http://ucanteen2.g3cwh8fvd9frdmeg.southeastasia.azurecontainer.io/users/restaurants/nearby', {
+    axios.get('https://ucanteen.azurewebsites.net/users/restaurants/nearby', {
       headers: {
         Authorization: `Bearer ${storedToken2}`,
       },

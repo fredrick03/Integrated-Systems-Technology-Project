@@ -58,7 +58,7 @@ const Register = () => {
 
     try {
         const apiUrlRegister1 = 'https://ayokebalitst.azurewebsites.net/register';
-        const apiUrlRegister2 = 'http://ucanteen2.g3cwh8fvd9frdmeg.southeastasia.azurecontainer.io/signup';
+        const apiUrlRegister2 = 'https://ucanteen.azurewebsites.net/signup';
 
         // Membuat dua permintaan registrasi secara bersamaan
         const [response1, response2] = await Promise.all([
