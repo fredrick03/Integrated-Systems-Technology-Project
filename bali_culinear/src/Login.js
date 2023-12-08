@@ -37,7 +37,7 @@ const Login = () => {
     const loginToAPI = async () => {
         try {
             const apiUrlLogin1 = 'https://ayokebalitst.azurewebsites.net/signin';
-            const apiUrlLogin2 = 'http://ucanteen2.g3cwh8fvd9frdmeg.southeastasia.azurecontainer.io/login';
+            const apiUrlLogin2 = 'https://ucanteen2.g3cwh8fvd9frdmeg.southeastasia.azurecontainer.io/login';
 
             const dataForApi2 = querystring.stringify({
                 username: username,
